@@ -80,7 +80,7 @@ parseReader = do
     'x' -> parseDigits "hex" readHex
     'd' -> parseDigits "decimal" readDec
     'b' -> parseDigits "binary" readBin
-    '\\' -> parseCharName <|> parseChar
+    '\\' -> try parseCharName <|> parseChar
     _ -> fail ("Unrecognised reader: " ++ [x])
 
 parseNumber :: Parser LispVal
