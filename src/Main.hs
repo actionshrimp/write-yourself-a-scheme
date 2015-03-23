@@ -11,6 +11,7 @@ data LispVal = Atom String
              | Number Integer
              | String String
              | Bool Bool
+             | Character Char
      deriving (Show)
 
 symbol :: Parser Char
@@ -55,10 +56,23 @@ parseDigits name reader = do
 readBin :: (Integral a) => ReadS a
 readBin = readInt 2 (\a -> a == '0' || a == '1') digitToInt
 
+parseChar :: Parser LispVal
+parseChar = do
+  c <- anyChar
+  return $ Character c
+
+parseCharName :: Parser LispVal
+parseCharName = do
+  cs <- many letter
+  case cs of
+    "space" -> return $ Character ' '
+    "newline" -> return $ Character '\n'
+    _ -> fail ("Unrecognised char name: " ++ cs)
+
 parseReader :: Parser LispVal
 parseReader = do
   char '#'
-  x <- letter
+  x <- anyChar
   case x of
     't' -> return $ Bool True
     'f' -> return $ Bool False
@@ -66,6 +80,7 @@ parseReader = do
     'x' -> parseDigits "hex" readHex
     'd' -> parseDigits "decimal" readDec
     'b' -> parseDigits "binary" readBin
+    '\\' -> parseCharName <|> parseChar
     _ -> fail ("Unrecognised reader: " ++ [x])
 
 parseNumber :: Parser LispVal
